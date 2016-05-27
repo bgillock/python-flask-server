@@ -1,0 +1,301 @@
+---
+swagger: "2.0"
+info:
+  description: "Access a visual representation of a surface"
+  version: "1.0.0"
+  title: "Surface Renderer"
+host: "localhost:3001"
+basePath: "/surface/v1"
+schemes:
+- "https"
+produces:
+- "application/json"
+paths:
+  /surface/{surfaceId}:
+    get:
+      tags:
+      - "surface"
+      summary: "Get surface definition"
+      description: "Get the meta definition of a surface"
+      operationId: "controllers.default_controller.surface_surface_id_get"
+      parameters:
+      - name: "surfaceId"
+        in: "path"
+        description: "ID of surface"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Surface meta definition"
+          schema:
+            $ref: "#/definitions/Surface"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+      x-swagger-router-controller: "Surface"
+      x-tags:
+      - tag: "surface"
+  /surface/{surfaceId}/{geoHash}/properties:
+    get:
+      tags:
+      - "properties"
+      summary: "Return a list of urls to images."
+      description: "Return a list of urls to images for the properties for the surface\
+        \ and geohash."
+      operationId: "controllers.default_controller.surface_surface_id_geo_hash_properties_get"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "surfaceId"
+        in: "path"
+        description: "ID of surface"
+        required: true
+        type: "string"
+      - name: "geoHash"
+        in: "path"
+        description: "Geohash - defines area and resolution of data (not used)"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Array of urls to images for the properties for the geohash."
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Image"
+      x-swagger-router-controller: "Properties"
+      x-tags:
+      - tag: "properties"
+  /surface/{surfaceId}/{geoHash}/triangles:
+    get:
+      tags:
+      - "triangles"
+      summary: "Return a binary array of vertices indexes"
+      description: "Returns a binary array of triangles described by integer indexes,\
+        \ three per triangle. Indexes are to vertices in the vertices array returned\
+        \ through /surface/{surfaceId}/{geoHash}/vertices URL."
+      operationId: "controllers.default_controller.surface_surface_id_geo_hash_triangles_get"
+      produces:
+      - "image/jpeg"
+      parameters:
+      - name: "surfaceId"
+        in: "path"
+        description: "ID of surface"
+        required: true
+        type: "string"
+      - name: "geoHash"
+        in: "path"
+        description: "Geohash - defines area and resolution of data (not used)"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Binary array of indexes into vertices."
+          schema:
+            type: "string"
+            format: "binary"
+      x-swagger-router-controller: "Triangles"
+      x-tags:
+      - tag: "triangles"
+  /surface/{surfaceId}/{geoHash}/vertices:
+    get:
+      tags:
+      - "vertices"
+      summary: "Return a binary array of vertices"
+      description: "Returns a binary array of interger indexes, three per triangle.\
+        \ Indexes are to vertices in the vertices array returned through /surface/{surfaceId}/{geoHash}/vertices\
+        \ URL."
+      operationId: "controllers.default_controller.surface_surface_id_geo_hash_vertices_get"
+      produces:
+      - "image/jpeg"
+      parameters:
+      - name: "surfaceId"
+        in: "path"
+        description: "ID of surface"
+        required: true
+        type: "string"
+      - name: "geoHash"
+        in: "path"
+        description: "Geohash - defines area and resolution of data (not used)"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Binary array of vertices: [[x,y,z,u,v,nx,ny,nz],[...]]. Where\
+            \ (nx,ny,nz) is the normal."
+          schema:
+            type: "string"
+            format: "binary"
+      x-swagger-router-controller: "Vertices"
+      x-tags:
+      - tag: "vertices"
+  /surface/{surfaceId}/{geoHash}/{propertyId}/image:
+    get:
+      tags:
+      - "image"
+      summary: "Return a jpeg file"
+      description: "Returns a jpeg file of the property which can be mapped to the\
+        \ vertices UVs for the given geohash code and property Id."
+      operationId: "controllers.default_controller.surface_surface_id_geo_hash_property_id_image_get"
+      produces:
+      - "image/jpeg"
+      parameters:
+      - name: "surfaceId"
+        in: "path"
+        description: "ID of surface"
+        required: true
+        type: "string"
+      - name: "geoHash"
+        in: "path"
+        description: "Geohash - defines area and resolution of data (not used)"
+        required: true
+        type: "string"
+      - name: "propertyId"
+        in: "path"
+        description: "ID of the property to get the image"
+        required: true
+        type: "string"
+      - name: "colorMap"
+        in: "query"
+        description: "Colormap to use for rendering (Default=black/white)"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "JPEG image"
+          schema:
+            type: "string"
+            format: "binary"
+      x-swagger-router-controller: "Image"
+      x-tags:
+      - tag: "image"
+  /surfaces:
+    get:
+      tags:
+      - "surfaces"
+      summary: "Get a list of surfaces"
+      description: "Returns a list of surfaces."
+      operationId: "controllers.default_controller.surfaces_get"
+      parameters:
+      - name: "domain"
+        in: "query"
+        description: "Time or Depth"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "An array surface meta definitions."
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Surface"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+      x-swagger-router-controller: "Surfaces"
+      x-tags:
+      - tag: "surfaces"
+definitions:
+  Surface:
+    type: "object"
+    properties:
+      Name:
+        type: "string"
+      Id:
+        type: "string"
+      nRows:
+        type: "number"
+        format: "integer"
+      nColumns:
+        type: "number"
+        format: "integer"
+      Domain:
+        type: "string"
+      locationXY:
+        $ref: "#/definitions/Surface_locationXY"
+      planeGeometry:
+        $ref: "#/definitions/Geometry"
+      properties:
+        type: "array"
+        items:
+          $ref: "#/definitions/Property"
+  Property:
+    type: "object"
+    properties:
+      Name:
+        type: "string"
+      Id:
+        type: "string"
+  Geometry:
+    type: "object"
+    properties:
+      width:
+        type: "number"
+        format: "double"
+      height:
+        type: "number"
+        format: "double"
+      translate:
+        $ref: "#/definitions/Geometry_translate"
+      rotation:
+        $ref: "#/definitions/Geometry_rotate"
+  Image:
+    type: "object"
+    properties:
+      width:
+        type: "integer"
+      height:
+        type: "integer"
+      url:
+        type: "string"
+  Error:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+      message:
+        type: "string"
+      fields:
+        type: "string"
+  Surface_locationXY:
+    properties:
+      CRS:
+        type: "string"
+        description: "The code for the CRS"
+      originX:
+        type: "number"
+        format: "double"
+      originY:
+        type: "number"
+        format: "double"
+      endFirstRowX:
+        type: "number"
+        format: "double"
+      endFirstColumnX:
+        type: "number"
+        format: "double"
+      endFirstRowY:
+        type: "number"
+        format: "double"
+      endFirstColumnY:
+        type: "number"
+        format: "double"
+  Geometry_translate:
+    properties:
+      x:
+        type: "number"
+      y:
+        type: "number"
+      z:
+        type: "number"
+  Geometry_rotate:
+    properties:
+      x:
+        type: "number"
+      y:
+        type: "number"
+      z:
+        type: "number"
