@@ -1,18 +1,12 @@
 
-def surface_surface_id_geo_hash_property_id_image_get(surfaceId, geoHash, propertyId, colorMap):
+def files_get() -> str:
     return 'do some magic!'
 
-def surface_surface_id_geo_hash_properties_get(surfaceId, geoHash):
+def header_get(file) -> str:
     return 'do some magic!'
 
-def surface_surface_id_get(surfaceId):
+def load_post(header = None) -> str:
     return 'do some magic!'
 
-def surfaces_get(domain):
-    return 'do some magic!'
-
-def surface_surface_id_geo_hash_triangles_get(surfaceId, geoHash):
-    return 'do some magic!'
-
-def surface_surface_id_geo_hash_vertices_get(surfaceId, geoHash):
+def read_line_get(file, line, starXline, nTraces) -> str:
     return 'do some magic!'

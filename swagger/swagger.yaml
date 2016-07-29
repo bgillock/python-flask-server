@@ -1,255 +1,197 @@
 ---
 swagger: "2.0"
 info:
-  description: "Access a visual representation of a surface"
+  description: "Access seismic on an HTTP server"
   version: "1.0.0"
-  title: "Surface Renderer"
-host: "localhost:3001"
-basePath: "/surface/v1"
+  title: "Seismic Server API"
+host: "bgillock.synology.me:3000"
+basePath: "/seismic/v1"
 schemes:
-- "https"
+- "http"
 produces:
 - "application/json"
 paths:
-  /surface/{surfaceId}:
+  /files:
     get:
       tags:
-      - "surface"
-      summary: "Get surface definition"
-      description: "Get the meta definition of a surface"
-      operationId: "controllers.default_controller.surface_surface_id_get"
-      parameters:
-      - name: "surfaceId"
-        in: "path"
-        description: "ID of surface"
-        required: true
-        type: "string"
+      - "Files"
+      summary: "Seismic files"
+      description: "Returns a list of files that contain seismic.\n"
+      operationId: "controllers.default_controller.files_get"
+      parameters: []
       responses:
         200:
-          description: "Surface meta definition"
+          description: "An array of names"
           schema:
-            $ref: "#/definitions/Surface"
+            type: "array"
+            items:
+              $ref: "#/definitions/FileName"
         default:
           description: "Unexpected error"
           schema:
             $ref: "#/definitions/Error"
-      x-swagger-router-controller: "Surface"
       x-tags:
-      - tag: "surface"
-  /surface/{surfaceId}/{geoHash}/properties:
+      - tag: "Files"
+  /header:
     get:
       tags:
-      - "properties"
-      summary: "Return a list of urls to images."
-      description: "Return a list of urls to images for the properties for the surface\
-        \ and geohash."
-      operationId: "controllers.default_controller.surface_surface_id_geo_hash_properties_get"
-      produces:
-      - "application/json"
+      - "Header"
+      summary: "Header of file"
+      description: "Information on size and location of seismic cube\n"
+      operationId: "controllers.default_controller.header_get"
       parameters:
-      - name: "surfaceId"
-        in: "path"
-        description: "ID of surface"
-        required: true
-        type: "string"
-      - name: "geoHash"
-        in: "path"
-        description: "Geohash - defines area and resolution of data (not used)"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "Array of urls to images for the properties for the geohash."
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Image"
-      x-swagger-router-controller: "Properties"
-      x-tags:
-      - tag: "properties"
-  /surface/{surfaceId}/{geoHash}/triangles:
-    get:
-      tags:
-      - "triangles"
-      summary: "Return a binary array of vertices indexes"
-      description: "Returns a binary array of triangles described by integer indexes,\
-        \ three per triangle. Indexes are to vertices in the vertices array returned\
-        \ through /surface/{surfaceId}/{geoHash}/vertices URL."
-      operationId: "controllers.default_controller.surface_surface_id_geo_hash_triangles_get"
-      produces:
-      - "image/jpeg"
-      parameters:
-      - name: "surfaceId"
-        in: "path"
-        description: "ID of surface"
-        required: true
-        type: "string"
-      - name: "geoHash"
-        in: "path"
-        description: "Geohash - defines area and resolution of data (not used)"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "Binary array of indexes into vertices."
-          schema:
-            type: "string"
-            format: "binary"
-      x-swagger-router-controller: "Triangles"
-      x-tags:
-      - tag: "triangles"
-  /surface/{surfaceId}/{geoHash}/vertices:
-    get:
-      tags:
-      - "vertices"
-      summary: "Return a binary array of vertices"
-      description: "Returns a binary array of interger indexes, three per triangle.\
-        \ Indexes are to vertices in the vertices array returned through /surface/{surfaceId}/{geoHash}/vertices\
-        \ URL."
-      operationId: "controllers.default_controller.surface_surface_id_geo_hash_vertices_get"
-      produces:
-      - "image/jpeg"
-      parameters:
-      - name: "surfaceId"
-        in: "path"
-        description: "ID of surface"
-        required: true
-        type: "string"
-      - name: "geoHash"
-        in: "path"
-        description: "Geohash - defines area and resolution of data (not used)"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "Binary array of vertices: [[x,y,z,u,v,nx,ny,nz],[...]]. Where\
-            \ (nx,ny,nz) is the normal."
-          schema:
-            type: "string"
-            format: "binary"
-      x-swagger-router-controller: "Vertices"
-      x-tags:
-      - tag: "vertices"
-  /surface/{surfaceId}/{geoHash}/{propertyId}/image:
-    get:
-      tags:
-      - "image"
-      summary: "Return a jpeg file"
-      description: "Returns a jpeg file of the property which can be mapped to the\
-        \ vertices UVs for the given geohash code and property Id."
-      operationId: "controllers.default_controller.surface_surface_id_geo_hash_property_id_image_get"
-      produces:
-      - "image/jpeg"
-      parameters:
-      - name: "surfaceId"
-        in: "path"
-        description: "ID of surface"
-        required: true
-        type: "string"
-      - name: "geoHash"
-        in: "path"
-        description: "Geohash - defines area and resolution of data (not used)"
-        required: true
-        type: "string"
-      - name: "propertyId"
-        in: "path"
-        description: "ID of the property to get the image"
-        required: true
-        type: "string"
-      - name: "colorMap"
+      - name: "file"
         in: "query"
-        description: "Colormap to use for rendering (Default=black/white)"
-        required: false
+        description: "File name"
+        required: true
         type: "string"
       responses:
         200:
-          description: "JPEG image"
+          description: "Contents of the header of the file"
           schema:
-            type: "string"
-            format: "binary"
-      x-swagger-router-controller: "Image"
-      x-tags:
-      - tag: "image"
-  /surfaces:
-    get:
-      tags:
-      - "surfaces"
-      summary: "Get a list of surfaces"
-      description: "Returns a list of surfaces."
-      operationId: "controllers.default_controller.surfaces_get"
-      parameters:
-      - name: "domain"
-        in: "query"
-        description: "Time or Depth"
-        required: false
-        type: "string"
-      responses:
-        200:
-          description: "An array surface meta definitions."
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Surface"
+            $ref: "#/definitions/Header"
         default:
           description: "Unexpected error"
           schema:
             $ref: "#/definitions/Error"
-      x-swagger-router-controller: "Surfaces"
       x-tags:
-      - tag: "surfaces"
+      - tag: "Header"
+  /load:
+    post:
+      tags:
+      - "Load"
+      summary: "Load seismic"
+      operationId: "controllers.default_controller.load_post"
+      parameters:
+      - in: "body"
+        name: "header"
+        description: "Header info"
+        required: false
+        schema:
+          $ref: "#/definitions/Header"
+      responses:
+        200:
+          description: "Upload successful"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+      x-tags:
+      - tag: "Load"
+  /readLine:
+    get:
+      tags:
+      - "ReadLine"
+      summary: "Reads a line from the file from the start xline"
+      description: "A Base64 buffer is returned with the samples for the specified\
+        \ range. Number of samples per trace and bits per sample is from the header."
+      operationId: "controllers.default_controller.read_line_get"
+      parameters:
+      - name: "file"
+        in: "query"
+        description: "File name"
+        required: true
+        type: "string"
+      - name: "line"
+        in: "query"
+        description: "inline using annotation coordinate"
+        required: true
+        type: "number"
+        format: "integer"
+      - name: "starXline"
+        in: "query"
+        description: "first xline using annotation coordinate"
+        required: true
+        type: "number"
+        format: "integer"
+      - name: "nTraces"
+        in: "query"
+        description: "number of traces to read"
+        required: true
+        type: "string"
+        format: "integer"
+      responses:
+        200:
+          description: "Buffer of seismic"
+          schema:
+            $ref: "#/definitions/Buffer"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+      x-tags:
+      - tag: "ReadLine"
 definitions:
-  Surface:
+  FileName:
     type: "object"
     properties:
-      Name:
+      name:
         type: "string"
-      Id:
-        type: "string"
-      nRows:
-        type: "number"
-        format: "integer"
-      nColumns:
-        type: "number"
-        format: "integer"
-      Domain:
-        type: "string"
-      locationXY:
-        $ref: "#/definitions/Surface_locationXY"
-      planeGeometry:
-        $ref: "#/definitions/Geometry"
-      properties:
-        type: "array"
-        items:
-          $ref: "#/definitions/Property"
-  Property:
+        description: "name of file"
+  Header:
     type: "object"
     properties:
-      Name:
+      name:
         type: "string"
-      Id:
-        type: "string"
-  Geometry:
+        description: "Cube name"
+      nlines:
+        type: "number"
+        description: "Number of in-lines"
+      nxlines:
+        type: "number"
+        description: "Number of cross-lines"
+      nsamples:
+        type: "number"
+        description: "Number of samples in each trace"
+      originx:
+        type: "number"
+        description: "X coordinate of the origin (first inline,first xline)"
+      originy:
+        type: "number"
+        description: "Y coordinate of the origin (first inline,first xline)"
+      inlineendx:
+        type: "number"
+        description: "X coordinate of end of first inline"
+      inlineendy:
+        type: "number"
+        description: "X coordinate of end of first inline"
+      xlineendx:
+        type: "number"
+        description: "X coordinate of end of first inline"
+      xlineendy:
+        type: "number"
+        description: "X coordinate of end of first inline"
+      samplerate:
+        type: "number"
+        description: "X coordinate of end of first inline"
+      annotinlinestart:
+        type: "number"
+        description: "X coordinate of end of first inline"
+      annotinlineinc:
+        type: "number"
+        description: "X coordinate of end of first inline"
+      annotxlinestart:
+        type: "number"
+        description: "X coordinate of end of first inline"
+      annotxlineinc:
+        type: "number"
+        description: "X coordinate of end of first inline"
+      minamp:
+        type: "number"
+        description: "X coordinate of end of first inline"
+      maxamp:
+        type: "number"
+        description: "X coordinate of end of first inline"
+      bitspersample:
+        type: "number"
+        description: "X coordinate of end of first inline"
+  Buffer:
     type: "object"
     properties:
-      width:
-        type: "number"
-        format: "double"
-      height:
-        type: "number"
-        format: "double"
-      translate:
-        $ref: "#/definitions/Geometry_translate"
-      rotation:
-        $ref: "#/definitions/Geometry_rotate"
-  Image:
-    type: "object"
-    properties:
-      width:
-        type: "integer"
-      height:
-        type: "integer"
-      url:
+      buff:
         type: "string"
+        format: "base64"
+        description: "base64 string of requested size"
   Error:
     type: "object"
     properties:
@@ -260,42 +202,3 @@ definitions:
         type: "string"
       fields:
         type: "string"
-  Surface_locationXY:
-    properties:
-      CRS:
-        type: "string"
-        description: "The code for the CRS"
-      originX:
-        type: "number"
-        format: "double"
-      originY:
-        type: "number"
-        format: "double"
-      endFirstRowX:
-        type: "number"
-        format: "double"
-      endFirstColumnX:
-        type: "number"
-        format: "double"
-      endFirstRowY:
-        type: "number"
-        format: "double"
-      endFirstColumnY:
-        type: "number"
-        format: "double"
-  Geometry_translate:
-    properties:
-      x:
-        type: "number"
-      y:
-        type: "number"
-      z:
-        type: "number"
-  Geometry_rotate:
-    properties:
-      x:
-        type: "number"
-      y:
-        type: "number"
-      z:
-        type: "number"
